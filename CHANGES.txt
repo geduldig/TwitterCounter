@@ -1,0 +1,12 @@
+v0.1.0, 08 Dec 2012 -- Initial release.
+
+v0.1.1, 10 Dec 2012 -- Updated __init__.py.
+
+v0.1.4, 11 Dec 2012 -- Fixed README.txt.
+
+v0.1.5, 11 Dec 2012 -- Scripts look for OAuth credentials in twittercount/credentials.txt
+                       or, with the '-oauth' option, in a text file specified on the command line.
+
+v0.1.6, 20 Jan 2013 -- Small change to exception handling to better maintain connection to twitter.com.
+
+v1.0.0, 30 Jan 2013 -- Uploaded to github.
