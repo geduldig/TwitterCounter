@@ -12,6 +12,5 @@ setup(
     license='MIT',
     keywords='twitter',
     description='Command line scripts for counting old and new tweets from twitter.com.',
-    long_description=open('README.txt').read(),
     install_requires = ['twitterapi']
 )
