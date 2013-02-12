@@ -1,5 +1,5 @@
 """
-	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO twittercounter/credentials.txt 
+	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO puttytat/credentials.txt 
 	          OR USE -oauth OPTION TO USE A DIFFERENT FILE CONTAINING THE CREDENTIALS.
 	
 	Prints the most frequent re-tweets that contain any of the words that are passed 
@@ -24,11 +24,11 @@ import sys, codecs
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 import argparse
-import os
-import sys
+import puttytat
 import twitterapi
 
 OAUTH = None
+
 
 def process_tweet(retweets, item, n):
 	text = item['retweeted_status'].get('text')
@@ -53,12 +53,13 @@ def process_tweet(retweets, item, n):
 			print '%d: %s' % (rt[0], rt[1])
 		print
 
+
 def rank_retweets_search(list, n):
 	words = ' OR '.join(list)
 	retweets = []
-	search = twitterapi.TwSearch(OAUTH, { 'q': words })
 	while True:
-		for item in search.past_results():
+		tw = puttytat.TwitterRestPager(OAUTH)
+		for item in tw.request('search/tweets', {'q': words}):
 			if 'retweeted_status' in item:
 				process_tweet(retweets, item, n)
 			elif 'message' in item:
@@ -68,20 +69,22 @@ def rank_retweets_search(list, n):
 					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
 				raise Exception('Message from twiter: %s' % item['message'])
 
+
 def rank_retweets_stream(list, n):
 	words = ','.join(list)
 	retweets = []
 	while True:
+		tw = puttytat.TwitterStream(OAUTH)
 		try:
-			stream = twitterapi.TwStream(OAUTH, { 'track': words })
 			while True:
-				for item in stream.results():
+				for item in tw.request('statuses/filter', {'track': words}):
 					if 'retweeted_status' in item:
 						process_tweet(retweets, item, n)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
 		except Exception, e:
 			print>>sys.stderr, '*** MUST RECONNECT', e
+
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Rank retweets.')
@@ -91,12 +94,7 @@ if __name__ == '__main__':
 	parser.add_argument('words', metavar='W', type=str, nargs='+', help='word(s) to track')
 	args = parser.parse_args()	
 
-	if args.oauth:
-		OAUTH = twitterapi.TwCredentials.read_file(args.oauth)
-	else:
-		path = os.path.dirname(__file__)
-		path = os.path.join(path, 'credentials.txt')
-		OAUTH = twitterapi.TwCredentials.read_file(path)
+	OAUTH = puttytat.TwitterOauth.read_file(args.oauth)
 	
 	try:
 		if args.past:

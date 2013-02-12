@@ -1,5 +1,5 @@
 """
-	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO twittercounter/credentials.txt 
+	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO puttytat/credentials.txt 
 	          OR USE -oauth OPTION TO USE A DIFFERENT FILE CONTAINING THE CREDENTIALS.
 	
 	Counts the frequency of tweets that contain any of the words that are passed as 
@@ -15,12 +15,15 @@ __author__ = "Jonas Geduldig"
 __date__ = "December 7, 2012"
 __license__ = "MIT"
 
+# unicode printing for Windows 
+import sys, codecs
+sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+
 import argparse
-import os
-import sys
-import twitterapi
+import puttytat
 
 OAUTH = None
+
 
 def process_tweet(text, count, list):
 	text = text.lower()
@@ -29,12 +32,13 @@ def process_tweet(text, count, list):
 			count[word] += 1
 	print count
 
+
 def count_words_search(list):
 	words = ' OR '.join(list)
 	count = dict((word,0) for word in list)
-	search = twitterapi.TwSearch(OAUTH, { 'q': words })
 	while True:
-		for item in search.past_results():
+		tw = puttytat.TwitterRestPager(OAUTH)
+		for item in tw.request('search/tweets', {'q': words}):
 			if 'text' in item:
 				process_tweet(item['text'], count, list)
 			elif 'message' in item:
@@ -44,16 +48,17 @@ def count_words_search(list):
 					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
 				raise Exception('Message from twiter: %s' % item['message'])
 
+
 def count_words_stream(list):
 	words = ','.join(list)
 	count = dict((word,0) for word in list)
 	total_skip = 0
 	while True:
-		stream = twitterapi.TwStream(OAUTH, { 'track': words })
+		tw = puttytat.TwitterStream(OAUTH)
 		skip = 0
 		try:
 			while True:
-				for item in stream.results():
+				for item in tw.request('statuses/filter', {'track': words}):
 					if 'text' in item:
 						process_tweet(item['text'], count, list)
 					elif 'limit' in item:
@@ -65,6 +70,7 @@ def count_words_stream(list):
 			print>>sys.stderr, '*** MUST RECONNECT', e
 		total_skip += skip
 
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Count occurances of word(s).')
 	parser.add_argument('-oauth', metavar='FILENAME', type=str, help='read OAuth credentials from file')
@@ -72,12 +78,7 @@ if __name__ == '__main__':
 	parser.add_argument('words', metavar='W', type=str, nargs='+', help='word(s) to count the occurance of')
 	args = parser.parse_args()	
 
-	if args.oauth:
-		OAUTH = twitterapi.TwCredentials.read_file(args.oauth)
-	else:
-		path = os.path.dirname(__file__)
-		path = os.path.join(path, 'credentials.txt')
-		OAUTH = twitterapi.TwCredentials.read_file(path)
+	OAUTH = puttytat.TwitterOauth.read_file(args.oauth)
 	
 	try:
 		if args.past:

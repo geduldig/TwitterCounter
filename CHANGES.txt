@@ -10,3 +10,5 @@ v0.1.5, 11 Dec 2012 -- Scripts look for OAuth credentials in twittercount/creden
 v0.1.6, 20 Jan 2013 -- Small change to exception handling to better maintain connection to twitter.com.
 
 v1.0.0, 30 Jan 2013 -- Uploaded to github.
+
+v1.1.0, 12 Feb 2013 -- Replaced TwitterAPI with puttytat for Twitter requests.

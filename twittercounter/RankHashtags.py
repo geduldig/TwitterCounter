@@ -1,5 +1,5 @@
 """
-	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO twittercounter/credentials.txt 
+	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO puttytat/credentials.txt 
 	          OR USE -oauth OPTION TO USE A DIFFERENT FILE CONTAINING THE CREDENTIALS.
 	
 	Prints the most frequent hashtags found in tweets that contain any of the words 
@@ -19,14 +19,17 @@ __author__ = "Jonas Geduldig"
 __date__ = "December 7, 2012"
 __license__ = "MIT"
 
+# unicode printing for Windows 
+import sys, codecs
+sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+
 import argparse
 import operator
-import os
-import sys
+import puttytat
 import Tokenizer
-import twitterapi
 
 OAUTH = None
+
 
 def process_tweet(text, count, n):
 	tokens = Tokenizer.Tokenizer.hashtags(text)
@@ -36,14 +39,16 @@ def process_tweet(text, count, n):
 		else:
 			count[tok] = 1
 	count_list = sorted(count.iteritems(), key=operator.itemgetter(1), reverse=True)
-	print ' '.join('%s-%s' % i for i in count_list[0:n])
+	if len(count_list) > 0:
+		print ' '.join('%s-%s' % i for i in count_list[:n])
+
 
 def rank_hashtags_search(list, n):
 	words = ' OR '.join(list)
 	count = {}
-	search = twitterapi.TwSearch(OAUTH, { 'q': words })
 	while True:
-		for item in search.past_results():
+		tw = puttytat.TwitterRestPager(OAUTH)
+		for item in tw.request('search/tweets', {'q': words}):
 			if 'text' in item:
 				process_tweet(item['text'], count, n)
 			elif 'message' in item:
@@ -53,20 +58,22 @@ def rank_hashtags_search(list, n):
 					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
 				raise Exception('Message from twiter: %s' % item['message'])
 
+
 def rank_hashtags_stream(list, n):
 	words = ','.join(list)
 	count = {}
 	while True:
+		tw = puttytat.TwitterStream(OAUTH)
 		try:
-			stream = twitterapi.TwStream(OAUTH, { 'track': words })
 			while True:
-				for item in stream.results():
+				for item in tw.request('statuses/filter', {'track': words}):
 					if 'text' in item:
 						process_tweet(item['text'], count, n)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
 		except Exception, e:
 			print>>sys.stderr, '*** MUST RECONNECT', e
+
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Hashtag ranker.')
@@ -76,12 +83,7 @@ if __name__ == '__main__':
 	parser.add_argument('words', metavar='W', type=str, nargs='+', help='word(s) to track')
 	args = parser.parse_args()	
 
-	if args.oauth:
-		OAUTH = twitterapi.TwCredentials.read_file(args.oauth)
-	else:
-		path = os.path.dirname(__file__)
-		path = os.path.join(path, 'credentials.txt')
-		OAUTH = twitterapi.TwCredentials.read_file(path)
+	OAUTH = puttytat.TwitterOauth.read_file(args.oauth)
 	
 	try:
 		if args.past:

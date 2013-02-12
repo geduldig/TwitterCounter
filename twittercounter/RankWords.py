@@ -1,5 +1,5 @@
 """
-	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO twittercounter/credentials.txt 
+	REQUIRED: PASTE YOUR TWITTER OAUTH CREDENTIALS INTO puttytat/credentials.txt 
 	          OR USE -oauth OPTION TO USE A DIFFERENT FILE CONTAINING THE CREDENTIALS.
 	
 	Prints the most frequent words found in tweets that contain any of the words that 
@@ -32,19 +32,19 @@ sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 import argparse
 import operator
-import os
-import sys
+import puttytat
 import Tokenizer
-import twitterapi
 import Words
 
 OAUTH = None
+
 
 def is_irrelevant_word(word):
 	if word in Words.conj or word in Words.prep or word in Words.pron or word in Words.misc:
 		return True
 	else:
 		return False
+
 
 def process_tweet(text, count, n, list):
 	tokens = Tokenizer.Tokenizer.plain_text(text)
@@ -55,14 +55,16 @@ def process_tweet(text, count, n, list):
 			else:
 				count[tok] = 1
 	count_list = sorted(count.iteritems(), key=operator.itemgetter(1), reverse=True)
-	print ' '.join('%s-%s' % i for i in count_list[0:n])
+	if len(count_list) > 0:
+		print ' '.join('%s-%s' % i for i in count_list[:n])
+
 
 def rank_words_search(list, n):
 	words = ' OR '.join(list)
 	count = {}
-	search = twitterapi.TwSearch(OAUTH, { 'q': words })
 	while True:
-		for item in search.past_results():
+		tw = puttytat.TwitterRestPager(OAUTH)
+		for item in tw.request('search/tweets', {'q': words}):
 			if 'text' in item:
 				process_tweet(item['text'], count, n, list)
 			elif 'message' in item:
@@ -72,20 +74,22 @@ def rank_words_search(list, n):
 					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
 				raise Exception('Message from twiter: %s' % item['message'])
 
+
 def rank_words_stream(list, n):
 	words = ','.join(list)
 	count = {}
 	while True:
+		tw = puttytat.TwitterStream(OAUTH)
 		try:
-			stream = twitterapi.TwStream(OAUTH, { 'track': words })
 			while True:
-				for item in stream.results():
+				for item in tw.request('statuses/filter', {'track': words}):
 					if 'text' in item:
 						process_tweet(item['text'], count, n, list)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
 		except Exception, e:
 			print>>sys.stderr, '*** MUST RECONNECT', e
+
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Word ranker.')
@@ -95,12 +99,7 @@ if __name__ == '__main__':
 	parser.add_argument('words', metavar='W', type=str, nargs='+', help='word(s) to track')
 	args = parser.parse_args()	
 
-	if args.oauth:
-		OAUTH = twitterapi.TwCredentials.read_file(args.oauth)
-	else:
-		path = os.path.dirname(__file__)
-		path = os.path.join(path, 'credentials.txt')
-		OAUTH = twitterapi.TwCredentials.read_file(path)
+	OAUTH = puttytat.TwitterOauth.read_file(args.oauth)
 	
 	try:
 		if args.past:
