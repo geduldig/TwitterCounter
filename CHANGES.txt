@@ -12,3 +12,5 @@ v0.1.6, 20 Jan 2013 -- Small change to exception handling to better maintain con
 v1.0.0, 30 Jan 2013 -- Uploaded to github.
 
 v1.1.0, 12 Feb 2013 -- Replaced TwitterAPI with puttytat for Twitter requests.
+
+v2.0.0, 14 Jun 2013 -- Switched to TwitterAPI
