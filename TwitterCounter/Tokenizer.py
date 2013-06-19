@@ -5,7 +5,7 @@ __license__ = "MIT"
 import re
 
 class Tokenizer:
-	"""Class methods for parsing tweets into lists of lower case words"""
+	"""Class methods for parsing tweets into lists of lower case words."""
 	
 	@classmethod
 	def _remove_urls(cls, tweet):
@@ -44,15 +44,10 @@ class Tokenizer:
 	def hashtags(cls, tweet, only_latin_alphabet=False):
 		"""Get hashtags from tweets.  
 		
-		Parameters
-		----------
-		tweet : str
-			Raw tweet text.
+		tweet : Raw tweet text.
 			
-		Output
-		------
-		hashtags : list
-		
+		Return: list
+			hashtags
 		"""
 		tweet = tweet.lower()
 		tweet = cls._remove_html_char_codes(tweet)
@@ -66,17 +61,11 @@ class Tokenizer:
 	def plain_text(cls, tweet, min_length=3, only_latin_alphabet=False):
 		"""Get words from tweets.  
 		
-		Parameters
-		----------
-		tweet : str
-			Raw tweet text.
+		tweet : Raw tweet text.
 			
-		Output
-		------
-		words : list
+		Return : list
 			Lower case words with at least 3 character, excluding non-latin
 			characters and digits not connected to letters.
-		
 		"""
 		tweet = tweet.lower()
 		tweet = cls._remove_urls(tweet)

@@ -2,11 +2,8 @@ __author__ = "Jonas Geduldig"
 __date__ = "December 7, 2012"
 __license__ = "MIT"
 
-# unicode printing for Windows 
-import sys, codecs
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-
 import argparse
+import sys
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
@@ -30,7 +27,7 @@ def process_tweet(retweets, item, n):
 		del retweets[0]
 	if inserted:
 		for rt in retweets:
-			print '%d: %s' % (rt[0], rt[1])
+			sys.stdout.write('%d: %s\n' % (rt[0], rt[1]))
 		print
 
 
@@ -46,7 +43,7 @@ def rank_old_retweets(api, list, n):
 				if item['code'] == 131:
 					continue # ignore internal server error
 				elif item['code'] == 88:
-					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
+					sys.stderr.write('Suspend search until %s\n' % search.get_quota()['reset'])
 				raise Exception('Message from twiter: %s' % item['message'])
 
 
@@ -63,8 +60,8 @@ def rank_new_retweets(api, list, n):
 						process_tweet(retweets, item, n)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
-		except Exception, e:
-			print>>sys.stderr, '*** MUST RECONNECT', e
+		except Exception as e:
+			sys.stderr.write('*** MUST RECONNECT %s\n' % e)
 
 
 if __name__ == '__main__':
@@ -84,6 +81,6 @@ if __name__ == '__main__':
 		else:
 			rank_new_retweets(api, args.words, args.n)
 	except KeyboardInterrupt:
-		print>>sys.stderr, '\nTerminated by user'
-	except Exception, e:
-		print>>sys.stderr, '*** STOPPED', e
+		sys.stderr.write('\nTerminated by user\n')
+	except Exception as e:
+		sys.stderr.write('*** STOPPED %s\n' % e)

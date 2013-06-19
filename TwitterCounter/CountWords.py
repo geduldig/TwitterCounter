@@ -2,11 +2,8 @@ __author__ = "Jonas Geduldig"
 __date__ = "December 7, 2012"
 __license__ = "MIT"
 
-# unicode printing for Windows 
-import sys, codecs
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-
 import argparse
+import sys
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
@@ -15,7 +12,7 @@ def process_tweet(text, count, list):
 	for word in list:
 		if word in text:
 			count[word] += 1
-	print count
+	sys.stdout.write(str(count) + '\n')
 
 
 def count_old_words(api, list):
@@ -30,7 +27,7 @@ def count_old_words(api, list):
 				if item['code'] == 131:
 					continue # ignore internal server error
 				elif item['code'] == 88:
-					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
+					sys.stderr.write('Suspend search until %s\n' % search.get_quota()['reset'])
 				raise Exception('Message from twiter: %s' % item['message'])
 
 
@@ -49,11 +46,11 @@ def count_new_words(api, list):
 						process_tweet(item['text'], count, list)
 					elif 'limit' in item:
 						skip = item['limit'].get('track')
-						print '\n\n\n*** Skipped %d tweets\n\n\n' % (total_skip + skip)
+						sys.stdout.write('\n\n\n*** Skipped %d tweets\n\n\n' % (total_skip + skip))
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
-		except Exception, e:
-			print>>sys.stderr, '*** MUST RECONNECT', e
+		except Exception as e:
+			sys.stderr.write('*** MUST RECONNECT %s\n' % e)
 		total_skip += skip
 
 
@@ -73,6 +70,6 @@ if __name__ == '__main__':
 		else:
 			count_new_words(api, args.words)
 	except KeyboardInterrupt:
-		print>>sys.stderr, '\nTerminated by user'
-	except Exception, e:
-		print>>sys.stderr, '*** STOPPED', e
+		sys.stderr.write('\nTerminated by user\n')
+	except Exception as e:
+		sys.stderr.write('*** STOPPED %s\n' % e)

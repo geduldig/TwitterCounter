@@ -2,26 +2,23 @@ __author__ = "Jonas Geduldig"
 __date__ = "December 7, 2012"
 __license__ = "MIT"
 
-# unicode printing for Windows 
-import sys, codecs
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-
 import argparse
 import operator
-import Tokenizer
+import sys
+from .Tokenizer import Tokenizer
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
 def process_tweet(text, count, n):
-	tokens = Tokenizer.Tokenizer.hashtags(text)
+	tokens = Tokenizer.hashtags(text)
 	for tok in tokens:
 		if tok in count:
 			count[tok] += 1
 		else:
 			count[tok] = 1
-	count_list = sorted(count.iteritems(), key=operator.itemgetter(1), reverse=True)
+	count_list = sorted(count.items(), key=operator.itemgetter(1), reverse=True)
 	if len(count_list) > 0:
-		print ' '.join('%s-%s' % i for i in count_list[:n])
+		sys.stdout.write(' '.join('%s-%s' % i for i in count_list[:n]) + '\n')
 
 
 def rank_old_hashtags(api, list, n):
@@ -36,7 +33,7 @@ def rank_old_hashtags(api, list, n):
 				if item['code'] == 131:
 					continue # ignore internal server error
 				elif item['code'] == 88:
-					print>>sys.stderr, 'Suspend search until %s' % search.get_quota()['reset']
+					sys.stderr.write('Suspend search until %s\n' % search.get_quota()['reset'])
 				raise Exception('Message from twiter: %s' % item['message'])
 
 
@@ -53,8 +50,8 @@ def rank_new_hashtags(api, list, n):
 						process_tweet(item['text'], count, n)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
-		except Exception, e:
-			print>>sys.stderr, '*** MUST RECONNECT', e
+		except Exception as e:
+			sys.stderr.write('*** MUST RECONNECT %s\n' % e)
 
 
 if __name__ == '__main__':
@@ -74,6 +71,6 @@ if __name__ == '__main__':
 		else:
 			rank_new_hashtags(api, args.words, args.n)
 	except KeyboardInterrupt:
-		print>>sys.stderr, '\nTerminated by user'
-	except Exception, e:
-		print>>sys.stderr, '*** STOPPED', e
+		sys.stderr.write('\nTerminated by user\n')
+	except Exception as e:
+		sys.stderr.write('*** STOPPED %s\n' % e)
