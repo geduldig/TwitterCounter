@@ -3,8 +3,19 @@ __date__ = "December 7, 2012"
 __license__ = "MIT"
 
 import argparse
+import codecs
 import sys
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
+
+
+try:
+	# python 3
+	sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
+	sys.stderr = codecs.getwriter('utf8')(sys.stderr.buffer)
+except:
+	# python 2
+	sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+	sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
 
 def process_tweet(retweets, item, n):

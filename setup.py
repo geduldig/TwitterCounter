@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='TwitterCounter',
-    version='2.0.1',
+    version='2.0.2',
     author='Jonas Geduldig',
     author_email='boxnumber03@gmail.com',
     packages=['TwitterCounter'],
