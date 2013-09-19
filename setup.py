@@ -1,4 +1,5 @@
 from distutils.core import setup
+import TwitterCounter
 import io
 
 def read(*filenames, **kwargs):
