@@ -16,3 +16,5 @@ v1.1.0, 12 Feb 2013 -- Replaced TwitterAPI with puttytat for Twitter requests.
 v2.0.0, 14 Jun 2013 -- Switched to TwitterAPI
 
 v2.0.2, 25 Jun 2013 -- Fixed printing.
+
+v2.1.0, 16 Sep 2013 -- Requires TwitterAPI 2.1

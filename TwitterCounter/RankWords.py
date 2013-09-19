@@ -3,22 +3,10 @@ __date__ = "December 7, 2012"
 __license__ = "MIT"
 
 import argparse
-import codecs
 import operator
-import sys
 from .Tokenizer import Tokenizer
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 from . import Words
-
-
-try:
-	# python 3
-	sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
-	sys.stderr = codecs.getwriter('utf8')(sys.stderr.buffer)
-except:
-	# python 2
-	sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-	sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
 
 def is_irrelevant_word(word):
@@ -38,22 +26,22 @@ def process_tweet(text, count, n, list):
 				count[tok] = 1
 	count_list = sorted(count.items(), key=operator.itemgetter(1), reverse=True)
 	if len(count_list) > 0:
-		sys.stdout.write(' '.join('%s-%s' % i for i in count_list[:n]) + '\n')
+		print(' '.join('%s-%s' % i for i in count_list[:n]))
 
 
 def rank_old_words(api, list, n):
 	words = ' OR '.join(list)
 	count = {}
 	while True:
-		iter = TwitterRestPager(api, 'search/tweets', {'q': words}).get_iterator()
-		for item in iter:
+		pager = TwitterRestPager(api, 'search/tweets', {'q': words})
+		for item in pager.get_iterator():
 			if 'text' in item:
 				process_tweet(item['text'], count, n, list)
 			elif 'message' in item:
 				if item['code'] == 131:
 					continue # ignore internal server error
 				elif item['code'] == 88:
-					sys.stderr.write('Suspend search until %s\n' % search.get_quota()['reset'])
+					print('Suspend search until %s' % search.get_quota()['reset'])
 				raise Exception('Message from twiter: %s' % item['message'])
 
 
@@ -62,16 +50,15 @@ def rank_new_words(api, list, n):
 	count = {}
 	while True:
 		try:
-			api.request('statuses/filter', {'track': words})
-			iter = api.get_iterator()
+			r = api.request('statuses/filter', {'track': words})
 			while True:
-				for item in iter:
+				for item in r.get_iterator():
 					if 'text' in item:
 						process_tweet(item['text'], count, n, list)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
 		except Exception as e:
-			sys.stderr.write('*** MUST RECONNECT %s\n' % e)
+			print('*** MUST RECONNECT %s\n' % e)
 
 
 if __name__ == '__main__':
@@ -91,6 +78,6 @@ if __name__ == '__main__':
 		else:
 			rank_new_words(api, args.words, args.n)
 	except KeyboardInterrupt:
-		sys.stderr.write('\nTerminated by user\n')
+		print('\nTerminated by user\n')
 	except Exception as e:
-		sys.stderr.write('*** STOPPED %s\n' % e)
+		print('*** STOPPED %s\n' % e)
