@@ -8,6 +8,9 @@ from .Tokenizer import Tokenizer
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
+COUNT = 100 # search download batch size
+
+
 def process_tweet(text, count, n):
 	tokens = Tokenizer.hashtags(text)
 	for tok in tokens:
@@ -24,7 +27,7 @@ def rank_old_hashtags(api, list, n):
 	words = ' OR '.join(list)
 	count = {}
 	while True:
-		pager = TwitterRestPager(api, 'search/tweets', {'q': words})
+		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'text' in item:
 				process_tweet(item['text'], count, n)
@@ -33,7 +36,7 @@ def rank_old_hashtags(api, list, n):
 					continue # ignore internal server error
 				elif item['code'] == 88:
 					print('Suspend search until %s' % search.get_quota()['reset'])
-				raise Exception('Message from twiter: %s' % item['message'])
+				raise Exception('Message from twitter: %s' % item['message'])
 
 
 def rank_new_hashtags(api, list, n):
@@ -41,7 +44,7 @@ def rank_new_hashtags(api, list, n):
 	count = {}
 	while True:
 		try:
-			r = api.request('statuses/filter', {'track': words})
+			r = api.request('statuses/filter', {'track':words})
 			while True:
 				for item in r.get_iterator():
 					if 'text' in item:

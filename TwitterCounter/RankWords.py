@@ -9,6 +9,9 @@ from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 from . import Words
 
 
+COUNT = 100 # search download batch size
+
+
 def is_irrelevant_word(word):
 	if word in Words.conj or word in Words.prep or word in Words.pron or word in Words.misc:
 		return True
@@ -33,7 +36,7 @@ def rank_old_words(api, list, n):
 	words = ' OR '.join(list)
 	count = {}
 	while True:
-		pager = TwitterRestPager(api, 'search/tweets', {'q': words})
+		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'text' in item:
 				process_tweet(item['text'], count, n, list)
@@ -42,7 +45,7 @@ def rank_old_words(api, list, n):
 					continue # ignore internal server error
 				elif item['code'] == 88:
 					print('Suspend search until %s' % search.get_quota()['reset'])
-				raise Exception('Message from twiter: %s' % item['message'])
+				raise Exception('Message from twitter: %s' % item['message'])
 
 
 def rank_new_words(api, list, n):
@@ -50,7 +53,7 @@ def rank_new_words(api, list, n):
 	count = {}
 	while True:
 		try:
-			r = api.request('statuses/filter', {'track': words})
+			r = api.request('statuses/filter', {'track':words})
 			while True:
 				for item in r.get_iterator():
 					if 'text' in item:

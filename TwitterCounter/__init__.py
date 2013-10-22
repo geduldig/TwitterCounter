@@ -1,5 +1,5 @@
 __title__ = 'TwitterCounter'
-__version__ = '2.1.0'
+__version__ = '2.1.2'
 __author__ = 'Jonas Geduldig'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2013 Jonas Geduldig'

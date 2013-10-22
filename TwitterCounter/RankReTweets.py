@@ -6,6 +6,9 @@ import argparse
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
+COUNT = 100 # search download batch size
+
+
 def process_tweet(retweets, item, n):
 	text = item['retweeted_status'].get('text')
 	count = item['retweet_count']
@@ -34,7 +37,7 @@ def rank_old_retweets(api, list, n):
 	words = ' OR '.join(list)
 	retweets = []
 	while True:
-		pager = TwitterRestPager(api, 'search/tweets', {'q': words})
+		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'retweeted_status' in item:
 				process_tweet(retweets, item, n)
@@ -43,7 +46,7 @@ def rank_old_retweets(api, list, n):
 					continue # ignore internal server error
 				elif item['code'] == 88:
 					print('Suspend search until %s' % search.get_quota()['reset'])
-				raise Exception('Message from twiter: %s' % item['message'])
+				raise Exception('Message from twitter: %s' % item['message'])
 
 
 def rank_new_retweets(api, list, n):
@@ -51,7 +54,7 @@ def rank_new_retweets(api, list, n):
 	retweets = []
 	while True:
 		try:
-			r = api.request('statuses/filter', {'track': words})
+			r = api.request('statuses/filter', {'track':words})
 			while True:
 				for item in r.get_iterator():
 					if 'retweeted_status' in item:

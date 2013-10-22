@@ -6,6 +6,9 @@ import argparse
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
+COUNT = 100 # search download batch size
+
+
 def process_tweet(text, count, list):
 	text = text.lower()
 	for word in list:
@@ -18,7 +21,7 @@ def count_old_words(api, list):
 	words = ' OR '.join(list)
 	count = dict((word,0) for word in list)
 	while True:
-		pager = TwitterRestPager(api, 'search/tweets', {'q': words})
+		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'text' in item:
 				process_tweet(item['text'], count, list)
@@ -27,7 +30,7 @@ def count_old_words(api, list):
 					continue # ignore internal server error
 				elif item['code'] == 88:
 					print('Suspend search until %s' % search.get_quota()['reset'])
-				raise Exception('Message from twiter: %s' % item['message'])
+				raise Exception('Message from twitter: %s' % item['message'])
 
 
 def count_new_words(api, list):
@@ -37,7 +40,7 @@ def count_new_words(api, list):
 	while True:
 		skip = 0
 		try:
-			r = api.request('statuses/filter', {'track': words})
+			r = api.request('statuses/filter', {'track':words})
 			while True:
 				for item in r.get_iterator():
 					if 'text' in item:

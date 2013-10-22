@@ -6,11 +6,14 @@ import argparse
 from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 
 
+COUNT = 100 # search download batch size
+
+
 def count_old_tweets(api, list):
 	words = ' OR '.join(list)
 	count = 0
 	while True:
-		pager = TwitterRestPager(api, 'search/tweets', {'q': words})
+		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'text' in item:
 				count += 1
@@ -20,7 +23,7 @@ def count_old_tweets(api, list):
 					continue # ignore internal server error
 				elif item['code'] == 88:
 					print('Suspend search until %s' % search.get_quota()['reset'])
-				raise Exception('Message from twiter: %s' % item['message'])
+				raise Exception('Message from twitter: %s' % item['message'])
 
 
 def count_new_tweets(api, list):
@@ -30,7 +33,7 @@ def count_new_tweets(api, list):
 	while True:
 		skip = 0
 		try:
-			r = api.request('statuses/filter', {'track': words})
+			r = api.request('statuses/filter', {'track':words})
 			while True:
 				for item in r.get_iterator():
 					if 'text' in item:
@@ -38,7 +41,7 @@ def count_new_tweets(api, list):
 						print(count + skip + total_skip)
 					elif 'limit' in item:
 						skip = item['limit'].get('track')
-						print('\n\n\n*** Skipping %d tweets\n\n\n' % (total_skip + skip))
+						#print('\n\n\n*** Skipping %d tweets\n\n\n' % (total_skip + skip))
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
 		except Exception as e:
