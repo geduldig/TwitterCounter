@@ -1,6 +1,5 @@
 TwitterCounter
 ==============
-
 Scripts for counting tweets.  Uses 'search/tweets' or 'statuses/filter' Twitter resource to get old or new tweets, respectively.
 
 CountTweets.py
