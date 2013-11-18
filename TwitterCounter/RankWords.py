@@ -19,10 +19,10 @@ def is_irrelevant_word(word):
 		return False
 
 
-def process_tweet(text, count, n, list):
+def process_tweet(text, count, n, word_list):
 	tokens = Tokenizer.plain_text(text)
 	for tok in tokens:
-		if not tok in list and not is_irrelevant_word(tok):
+		if not tok in word_list and not is_irrelevant_word(tok):
 			if tok in count:
 				count[tok] += 1
 			else:
@@ -32,14 +32,14 @@ def process_tweet(text, count, n, list):
 		print(' '.join('%s-%s' % i for i in count_list[:n]))
 
 
-def rank_old_words(api, list, n):
-	words = ' OR '.join(list)
+def rank_old_words(api, word_list, n):
+	words = ' OR '.join(word_list)
 	count = {}
 	while True:
 		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'text' in item:
-				process_tweet(item['text'], count, n, list)
+				process_tweet(item['text'], count, n, word_list)
 			elif 'message' in item:
 				if item['code'] == 131:
 					continue # ignore internal server error
@@ -48,8 +48,8 @@ def rank_old_words(api, list, n):
 				raise Exception('Message from twitter: %s' % item['message'])
 
 
-def rank_new_words(api, list, n):
-	words = ','.join(list)
+def rank_new_words(api, word_list, n):
+	words = ','.join(word_list)
 	count = {}
 	while True:
 		try:
@@ -57,7 +57,7 @@ def rank_new_words(api, list, n):
 			while True:
 				for item in r.get_iterator():
 					if 'text' in item:
-						process_tweet(item['text'], count, n, list)
+						process_tweet(item['text'], count, n, word_list)
 					elif 'disconnect' in item:
 						raise Exception('Disconnect: %s' % item['disconnect'].get('reason'))
 		except Exception as e:

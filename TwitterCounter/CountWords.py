@@ -9,22 +9,22 @@ from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 COUNT = 100 # search download batch size
 
 
-def process_tweet(text, count, list):
+def process_tweet(text, count, word_list):
 	text = text.lower()
-	for word in list:
+	for word in word_list:
 		if word in text:
 			count[word] += 1
 	print(count)
 
 
-def count_old_words(api, list):
-	words = ' OR '.join(list)
-	count = dict((word,0) for word in list)
+def count_old_words(api, word_list):
+	words = ' OR '.join(word_list)
+	count = dict((word,0) for word in word_list)
 	while True:
 		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
 		for item in pager.get_iterator():
 			if 'text' in item:
-				process_tweet(item['text'], count, list)
+				process_tweet(item['text'], count, word_list)
 			elif 'message' in item:
 				if item['code'] == 131:
 					continue # ignore internal server error
@@ -33,9 +33,9 @@ def count_old_words(api, list):
 				raise Exception('Message from twitter: %s' % item['message'])
 
 
-def count_new_words(api, list):
-	words = ','.join(list)
-	count = dict((word,0) for word in list)
+def count_new_words(api, word_list):
+	words = ','.join(word_list)
+	count = dict((word,0) for word in word_list)
 	total_skip = 0
 	while True:
 		skip = 0
@@ -44,7 +44,7 @@ def count_new_words(api, list):
 			while True:
 				for item in r.get_iterator():
 					if 'text' in item:
-						process_tweet(item['text'], count, list)
+						process_tweet(item['text'], count, word_list)
 					elif 'limit' in item:
 						skip = item['limit'].get('track')
 						print('\n\n\n*** Skipped %d tweets\n\n\n' % (total_skip + skip))

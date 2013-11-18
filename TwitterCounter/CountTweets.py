@@ -9,8 +9,8 @@ from TwitterAPI import TwitterAPI, TwitterOAuth, TwitterRestPager
 COUNT = 100 # search download batch size
 
 
-def count_old_tweets(api, list):
-	words = ' OR '.join(list)
+def count_old_tweets(api, word_list):
+	words = ' OR '.join(word_list)
 	count = 0
 	while True:
 		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
@@ -26,8 +26,8 @@ def count_old_tweets(api, list):
 				raise Exception('Message from twitter: %s' % item['message'])
 
 
-def count_new_tweets(api, list):
-	words = ','.join(list)
+def count_new_tweets(api, word_list):
+	words = ','.join(word_list)
 	count = 0
 	total_skip = 0
 	while True:

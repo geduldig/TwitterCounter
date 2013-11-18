@@ -33,8 +33,8 @@ def process_tweet(retweets, item, n):
 		print
 
 
-def rank_old_retweets(api, list, n):
-	words = ' OR '.join(list)
+def rank_old_retweets(api, word_list, n):
+	words = ' OR '.join(word_list)
 	retweets = []
 	while True:
 		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
@@ -49,8 +49,8 @@ def rank_old_retweets(api, list, n):
 				raise Exception('Message from twitter: %s' % item['message'])
 
 
-def rank_new_retweets(api, list, n):
-	words = ','.join(list)
+def rank_new_retweets(api, word_list, n):
+	words = ','.join(word_list)
 	retweets = []
 	while True:
 		try:

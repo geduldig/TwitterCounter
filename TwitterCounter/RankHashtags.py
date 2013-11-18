@@ -23,8 +23,8 @@ def process_tweet(text, count, n):
 		print(' '.join('%s-%s' % i for i in count_list[:n]))
 
 
-def rank_old_hashtags(api, list, n):
-	words = ' OR '.join(list)
+def rank_old_hashtags(api, word_list, n):
+	words = ' OR '.join(word_list)
 	count = {}
 	while True:
 		pager = TwitterRestPager(api, 'search/tweets', {'q':words, 'count':COUNT})
@@ -39,8 +39,8 @@ def rank_old_hashtags(api, list, n):
 				raise Exception('Message from twitter: %s' % item['message'])
 
 
-def rank_new_hashtags(api, list, n):
-	words = ','.join(list)
+def rank_new_hashtags(api, word_list, n):
+	words = ','.join(word_list)
 	count = {}
 	while True:
 		try:
