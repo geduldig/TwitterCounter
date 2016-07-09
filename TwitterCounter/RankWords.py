@@ -1,4 +1,4 @@
-__author__ = "Jonas Geduldig"
+__author__ = "boxnumber03"
 __date__ = "December 7, 2012"
 __license__ = "MIT"
 

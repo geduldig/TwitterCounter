@@ -14,7 +14,7 @@ def read(*filenames, **kwargs):
 setup(
     name='TwitterCounter',
     version=TwitterCounter.__version__,
-    author='Jonas Geduldig',
+    author='boxnumber03',
     author_email='boxnumber03@gmail.com',
     packages=['TwitterCounter'],
     package_data={'': []},

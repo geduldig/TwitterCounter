@@ -52,8 +52,3 @@ See TwitterAPI documentation.
 Dependencies
 -----------
 * TwitterAPI
-
-Contributors
-------------
-
-* Jonas Geduldig
