@@ -23,6 +23,5 @@ setup(
     license='MIT',
     keywords='twitter',
     description='Command line scripts for counting tweets from twitter.com.',
-    long_description=read('README.txt'),
     install_requires = ['TwitterAPI>=2.1']
 )
