@@ -1,5 +1,5 @@
-[![Downloads](https://pypip.in/d/TwitterCounter/badge.png)](https://crate.io/packages/TwitterCounter)
-[![Downloads](https://pypip.in/v/TwitterCounter/badge.png)](https://crate.io/packages/TwitterCounter)
+[![Downloads](https://img.shields.io/pypi/dm/TwitterCounter.svg)](https://crate.io/packages/TwitterCounter)
+[![Downloads](https://img.shields.io/pypi/v/TwitterCounter.svg)](https://crate.io/packages/TwitterCounter)
 
 TwitterCounter
 ==============
